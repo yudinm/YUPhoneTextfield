@@ -37,7 +37,7 @@
 }
 
 - (IBAction)btSendDidTapped:(id)sender {
-    NSString *strMobile = [NSString stringWithFormat:@"\"%@\"",self.strPhoneNumber];
+    NSString *strMobile = [NSString stringWithFormat:@"\"%@\"\n\"%@\"",self.strPhoneNumber, [self.formatter trimNonDigit:self.strPhoneNumber]];
     UIAlertView *av = [[UIAlertView alloc] initWithTitle:@"Phone number:" message:strMobile delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
     [av show];
 }

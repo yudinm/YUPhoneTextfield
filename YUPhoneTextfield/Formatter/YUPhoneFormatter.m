@@ -79,40 +79,30 @@
     return trimmedString;
 }
 
-+ (NSString*)clearFromFormat:(NSString*)aString
-{
-    NSString *oString = [aString stringByReplacingOccurrencesOfString:@"+" withString:@""];
-    oString = [oString stringByReplacingOccurrencesOfString:@"(" withString:@""];
-    oString = [oString stringByReplacingOccurrencesOfString:@")" withString:@""];
-    oString = [oString stringByReplacingOccurrencesOfString:@"-" withString:@""];
-    oString = [oString stringByReplacingOccurrencesOfString:@" " withString:@""];
-    return oString;
-}
-
 #pragma mark - Text Field Delegate
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
 {
     YUPhoneFormatter *pf = [[YUPhoneFormatter alloc] init];
-    NSString *trimmedString = [pf trimNonDigit:string]; // Чищу от нецифр входную строку
+    NSString *trimmedString = [pf trimNonDigit:string];
     NSString *text = textField.text;
-    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"(\\+)|(\\()|(\\))|(-)|( )" options:0 error:nil];
-    text = [text stringByReplacingCharactersInRange:range withString:trimmedString]; // Применяю изминения с клавиатуры к тексту имеющемуся уже в поле ввода
+    text = [text stringByReplacingCharactersInRange:range withString:trimmedString]; // Apply changes from keyboard to current text in textfield
 
-    NSString *newText = [regex stringByReplacingMatchesInString:text options:NSMatchingReportProgress range:NSMakeRange(0, text.length) withTemplate:@""]; // Очищаю измененный номер от нашего формата чтобы получить только 10 или меньше цифр
-    NSString *oldText = [regex stringByReplacingMatchesInString:textField.text options:NSMatchingReportProgress range:NSMakeRange(0, textField.text.length) withTemplate:@""]; // Очищаю НЕ измененный номер от нашего формата чтобы получить только 10 или меньше цифр
-    if ([string isEqualToString:@""]) { // Обрабатываю более-менее приятное удаление
+    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"(\\+)|(\\()|(\\))|(-)|( )" options:0 error:nil];
+    NSString *oldText = [regex stringByReplacingMatchesInString:textField.text options:NSMatchingReportProgress range:NSMakeRange(0, textField.text.length) withTemplate:@""]; // Delete fromat from current text
+    NSString *newText = [regex stringByReplacingMatchesInString:text options:NSMatchingReportProgress range:NSMakeRange(0, text.length) withTemplate:@""]; // Delete format from changed text
+    if ([string isEqualToString:@""]) { // If backspace
         if (newText.length<=4&&range.location<10) {
             newText = [newText substringToIndex:newText.length-1];
         }
-        if (newText.length==oldText.length) { // Если изменения после ввода не повлияли на длину "чистого" номера, то пытались удалить формат, а значит ничего не делаем
+        if (newText.length==oldText.length) { // If changes not affected clean number length, then trying to delete format "+,(,),-,-"
             return NO;
         }
     }
-    if ([pf trimNonDigit:newText].length>11) {
+    if ([pf trimNonDigit:newText].length>11) { // If try to input too long number
         return NO;
     }
-    NSString *formattedString = [pf stringForObjectValue:newText]; // Форматирую измененный номер для вывода
-    textField.text = formattedString; // Вывожу
+    NSString *formattedString = [pf stringForObjectValue:newText]; // Add format to changed number
+    textField.text = formattedString; // Output new formatted string into textfield
     NSString *newTrimmedString = [pf trimNonDigit:newText];
     if (newTrimmedString.length) {
         NSInteger lastCharPos = [formattedString rangeOfString:[newTrimmedString substringFromIndex:newTrimmedString.length-1] options:NSBackwardsSearch].location;
@@ -122,8 +112,9 @@
         UITextPosition *selPos = [textField positionFromPosition:[textField beginningOfDocument] offset:1];
         textField.selectedTextRange = [textField textRangeFromPosition:selPos toPosition:selPos];
     }
-    //        self.currentUser.phone = newText; // Обновляю переменную, которую будем отсылать на сервер или передавать куда-то дальше
-    //    _strPhoneNumber = formattedString;
+
+    /* Add updating phone data attribute if its needed */
+
     return NO;
 }
 

@@ -11,7 +11,6 @@
 @interface YUPhoneFormatter : NSFormatter <UITextFieldDelegate>
 
 - (NSString*)trimNonDigit:(NSString*)aString;
-+ (NSString*)clearFromFormat:(NSString*)aString;
 
 #pragma mark - Text Field Delegate
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;
